@@ -46,26 +46,24 @@ public class MyService extends Service {
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
+        HandlerThread thread = new HandlerThread("ServiceStartArguments",
+                Thread.MIN_PRIORITY);
+        thread.start();
 
-        /* todo:
-         * Create a HandlerThread with 2 parameters
-         *
-         * - Get the Looper from the thread
-         * - Use the Looper from the previous step to get a new ServiceHandler
-         * - You will need the ServiceHandler from the previous step in other functions!
-         * */
+        // Get the HandlerThread's Looper and use it for our Handler
+        mServiceLooper = thread.getLooper();
+        mServiceHandler = new ServiceHandler(mServiceLooper);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
 
-        /*
-        * todo:
-        *
-        * - Obtain the Message object from the service handler
-        * - Assign the startID to the Message's first argument
-        * */
+        // For each start request, send a message to start a job and deliver the
+        // start ID so we know which request we're stopping when we finish the job
+        Message msg = mServiceHandler.obtainMessage();
+        msg.arg1 = startId;
+        mServiceHandler.sendMessage(msg);
 
         // If we get killed, after returning from here, restart
         return START_STICKY;
